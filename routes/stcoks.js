@@ -53,3 +53,60 @@ router.post('/favorites', async (req, res) => {
       res.status(500).json({ error: 'Internal Server Error' });
     }
   });
+
+  router.get('/favorites', async (req, res) => {
+    try {
+      const favoriteStocks = await Favorite.find().populate('stock');
+      res.json(favoriteStocks);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+  
+  // Route to remove a stock from favorites
+  router.delete('/favorites/:id', async (req, res) => {
+    const { id } = req.params;
+  
+    if (!id) {
+      return res.status(400).json({ error: 'ID parameter is required' });
+    }
+  
+    try {
+      // Remove the reference from the Stock model
+      const favorite = await Favorite.findByIdAndDelete(id);
+      await Stock.findByIdAndUpdate(favorite.stock, { $pull: { favorites: favorite._id } });
+  
+      res.json({ message: 'Stock removed from favorites' });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+
+  router.get('/stockHistory/:code', async (req, res) => {
+    const { code } = req.params;
+  
+    if (!code) {
+      return res.status(400).json({ error: 'Code parameter is required' });
+    }
+  
+    try {
+      const currentDate = new Date();
+      const fiftyDaysAgo = new Date();
+      fiftyDaysAgo.setDate(fiftyDaysAgo.getDate() - 50);
+     console.log(currentDate)
+     console.log(fiftyDaysAgo)
+      const stockData = await Stock.find({
+        code,
+        createdAt: { $gte: fiftyDaysAgo, $lte: currentDate },
+      }).sort({ createdAt: -1 });
+  
+      res.json(stockData);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+
+  module.exports = router;
