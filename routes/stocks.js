@@ -40,11 +40,9 @@ router.post('/favorites', async (req, res) => {
     }
   
     try {
-      // Create a new favorite entry
       const newFavorite = new Favorite({ stock: stockId });
       await newFavorite.save();
   
-      // Update the Stock model to include this favorite reference
       await Stock.findByIdAndUpdate(stockId, { $push: { favorites: newFavorite._id } });
   
       res.status(201).json(newFavorite);
@@ -64,7 +62,6 @@ router.post('/favorites', async (req, res) => {
     }
   });
   
-  // Route to remove a stock from favorites
   router.delete('/favorites/:id', async (req, res) => {
     const { id } = req.params;
   
@@ -73,7 +70,6 @@ router.post('/favorites', async (req, res) => {
     }
   
     try {
-      // Remove the reference from the Stock model
       const favorite = await Favorite.findByIdAndDelete(id);
       await Stock.findByIdAndUpdate(favorite.stock, { $pull: { favorites: favorite._id } });
   
