@@ -4,6 +4,8 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 const { runDataProcessingBeforeServerStarts } = require('./dataProcessing');
 const stocksRouter = require('./routes/stocks');
+const cron = require('node-cron');
+
 
 
 const app = express();
@@ -17,6 +19,14 @@ mongoose.connect(process.env.DATABASE_URL).then(async () => {
   console.log('Connected to the database');
 
   await runDataProcessingBeforeServerStarts();
+
+  cron.schedule('55 21 * * *', async () => {
+    console.log('Running data processing task...');
+    await runDataProcessingBeforeServerStarts();
+  }, {
+    timezone: 'Asia/Kolkata', 
+  });
+
 
   app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

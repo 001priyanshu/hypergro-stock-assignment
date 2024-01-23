@@ -22,8 +22,13 @@ async function fetchDataForDays(days) {
       const latestEntry = await Stock.findOne().sort({ createdAt: -1 });
       
   
-  
-      if (latestEntry && new Date(latestEntry.createdAt) >= currentDateCopy) {
+      const latestEntryDate = new Date(latestEntry.createdAt);
+      latestEntryDate.setHours(0, 0, 0, 0); 
+      
+      const currentDateCopyMidnight = new Date(currentDateCopy);
+      currentDateCopyMidnight.setHours(0, 0, 0, 0); 
+      
+      if (latestEntryDate >= currentDateCopyMidnight) {
         console.log(`Data for ${formattedDate} already exists. Skipping data fetch and processing.`);
         continue;
       }
